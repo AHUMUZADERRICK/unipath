@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+.venv/
+venv/
+
+# Django static/media
+backend/staticfiles/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Env files
+.env
+backend/.env
+frontend/.env

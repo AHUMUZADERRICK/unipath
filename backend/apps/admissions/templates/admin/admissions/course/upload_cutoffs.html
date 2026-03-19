@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <h1>Upload Course Cutoffs (CSV)</h1>
+  <p>Required columns: <strong>university</strong>, <strong>course</strong>, <strong>cutoff_weight</strong>. Optional: <strong>year</strong>, <strong>duration</strong>.</p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="default">Upload</button>
+    <a href="{% url 'admin:admissions_course_changelist' %}" class="button">Cancel</a>
+  </form>
+{% endblock %}
