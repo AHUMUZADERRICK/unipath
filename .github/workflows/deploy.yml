@@ -11,20 +11,38 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            cd /home/${{ secrets.VPS_USER }}/unipath
+            set -e
+
+            if command -v docker-compose >/dev/null 2>&1; then
+              COMPOSE_CMD="docker-compose"
+            else
+              COMPOSE_CMD="docker compose"
+            fi
+
+            if [ -d /home/unipath ]; then
+              cd /home/unipath
+            elif [ -d /home/${{ secrets.VPS_USER }}/unipath ]; then
+              cd /home/${{ secrets.VPS_USER }}/unipath
+            elif [ -d /root/unipath ]; then
+              cd /root/unipath
+            else
+              echo "Deployment directory not found. Checked /home/unipath, /home/${{ secrets.VPS_USER }}/unipath, /root/unipath"
+              exit 1
+            fi
+
             git pull origin main
-            docker-compose down
-            docker-compose pull
-            docker-compose up -d
-            docker-compose exec -T backend python manage.py migrate
+            $COMPOSE_CMD down --remove-orphans
+            $COMPOSE_CMD build --pull
+            $COMPOSE_CMD up -d
+            $COMPOSE_CMD exec -T backend python manage.py migrate
             echo "✅ Deployment completed successfully!"
