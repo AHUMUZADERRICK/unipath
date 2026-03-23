@@ -6,6 +6,26 @@ import ApplicationPlanner from "./ApplicationPlanner";
 export default function ResultsPanel({ loading, error, result, candidate }) {
   const [exporting, setExporting] = useState(false);
 
+  const recommendationCards = result?.recommendation_groups
+    ? [
+        {
+          label: "Top chances",
+          value: result.recommendation_groups.top_chances?.length || 0,
+          tone: "success",
+        },
+        {
+          label: "Safe options",
+          value: result.recommendation_groups.safe_options?.length || 0,
+          tone: "info",
+        },
+        {
+          label: "Ambitious choices",
+          value: result.recommendation_groups.ambitious_choices?.length || 0,
+          tone: "warm",
+        },
+      ]
+    : [];
+
   const handleExportPDF = async () => {
     if (!candidate || !result) return;
     setExporting(true);
@@ -39,54 +59,34 @@ export default function ResultsPanel({ loading, error, result, candidate }) {
       {result && (
         <>
           <div className="weight-hero">
-            <span>Final Weight</span>
-            <strong>{result.final_weight}</strong>
+            <div>
+              <span>Final Weight</span>
+              <strong>{result.final_weight}</strong>
+            </div>
+            <div className="weight-hero-note">
+              <p>Calculated using your submitted UACE combination, UCE grades, and profile rules.</p>
+              <div className="weight-pulse" aria-hidden="true" />
+            </div>
           </div>
 
           {result && candidate && (
             <button
               onClick={handleExportPDF}
               disabled={exporting}
-              style={{
-                marginBottom: "16px",
-                padding: "10px 16px",
-                backgroundColor: exporting ? "#d1d5db" : "#10b981",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "14px",
-                fontWeight: 500,
-                cursor: exporting ? "not-allowed" : "pointer",
-              }}
+              className="btn-ghost btn-export"
             >
-              {exporting ? "Exporting PDF..." : "📄 Export Summary (PDF)"}
+              {exporting ? "Exporting PDF..." : "Export Summary (PDF)"}
             </button>
           )}
 
-          {result.recommendation_groups && (
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Recommendation Band</th>
-                    <th>Count</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Top chances</td>
-                    <td>{result.recommendation_groups.top_chances?.length || 0}</td>
-                  </tr>
-                  <tr>
-                    <td>Safe options</td>
-                    <td>{result.recommendation_groups.safe_options?.length || 0}</td>
-                  </tr>
-                  <tr>
-                    <td>Ambitious choices</td>
-                    <td>{result.recommendation_groups.ambitious_choices?.length || 0}</td>
-                  </tr>
-                </tbody>
-              </table>
+          {recommendationCards.length > 0 && (
+            <div className="recommendation-grid">
+              {recommendationCards.map((card) => (
+                <article key={card.label} className={`recommendation-card tone-${card.tone}`}>
+                  <span>{card.label}</span>
+                  <strong>{card.value}</strong>
+                </article>
+              ))}
             </div>
           )}
 
@@ -95,52 +95,64 @@ export default function ResultsPanel({ loading, error, result, candidate }) {
           {result.eligible_courses.length === 0 ? (
             <p className="status">No course matched your current profile in the current Uganda dataset.</p>
           ) : (
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Course</th>
-                    <th>University</th>
-                    <th>Cutoff</th>
-                    <th>Your Weight</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.eligible_courses.map((course) => (
-                    <tr key={`${course.course}-${course.university}`}>
-                      <td>{course.course}</td>
-                      <td>{course.university}</td>
-                      <td>{course.cutoff}</td>
-                      <td>{course.calculated_weight}</td>
+            <div className="results-section">
+              <div className="section-heading">
+                <h3>Eligible Courses</h3>
+                <p>Programs where your weight currently meets or exceeds the listed cutoff.</p>
+              </div>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Course</th>
+                      <th>University</th>
+                      <th>Cutoff</th>
+                      <th>Your Weight</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {result.eligible_courses.map((course) => (
+                      <tr key={`${course.course}-${course.university}`}>
+                        <td>{course.course}</td>
+                        <td>{course.university}</td>
+                        <td>{course.cutoff}</td>
+                        <td>{course.calculated_weight}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
           {Array.isArray(result.borderline_courses) && result.borderline_courses.length > 0 && (
-            <div className="table-wrap" style={{ marginTop: "1rem" }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Borderline Course</th>
-                    <th>University</th>
-                    <th>Cutoff</th>
-                    <th>Your Weight</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.borderline_courses.map((course) => (
-                    <tr key={`borderline-${course.course}-${course.university}`}>
-                      <td>{course.course}</td>
-                      <td>{course.university}</td>
-                      <td>{course.cutoff}</td>
-                      <td>{course.calculated_weight}</td>
+            <div className="results-section">
+              <div className="section-heading">
+                <h3>Borderline Courses</h3>
+                <p>Good stretch options that may deserve a closer look before applying.</p>
+              </div>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Borderline Course</th>
+                      <th>University</th>
+                      <th>Cutoff</th>
+                      <th>Your Weight</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {result.borderline_courses.map((course) => (
+                      <tr key={`borderline-${course.course}-${course.university}`}>
+                        <td>{course.course}</td>
+                        <td>{course.university}</td>
+                        <td>{course.cutoff}</td>
+                        <td>{course.calculated_weight}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -155,29 +167,39 @@ export default function ResultsPanel({ loading, error, result, candidate }) {
           )}
 
           {Array.isArray(result.course_evaluations) && result.course_evaluations.length > 0 && (
-            <div className="table-wrap" style={{ marginTop: "1rem" }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Course</th>
-                    <th>Status</th>
-                    <th>Explanation</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.course_evaluations.map((course) => (
-                    <tr key={`eval-${course.course}-${course.university}`}>
-                      <td>
-                        {course.course}
-                        <br />
-                        <small>{course.university}</small>
-                      </td>
-                      <td>{course.is_eligible ? "Eligible" : "Not Eligible"}</td>
-                      <td>{course.explanation}</td>
+            <div className="results-section">
+              <div className="section-heading">
+                <h3>Evaluation Notes</h3>
+                <p>A quick explanation for why each reviewed course passed or missed the threshold.</p>
+              </div>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Course</th>
+                      <th>Status</th>
+                      <th>Explanation</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {result.course_evaluations.map((course) => (
+                      <tr key={`eval-${course.course}-${course.university}`}>
+                        <td>
+                          {course.course}
+                          <br />
+                          <small>{course.university}</small>
+                        </td>
+                        <td>
+                          <span className={`status-badge ${course.is_eligible ? "ok" : "muted"}`}>
+                            {course.is_eligible ? "Eligible" : "Not Eligible"}
+                          </span>
+                        </td>
+                        <td>{course.explanation}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </>

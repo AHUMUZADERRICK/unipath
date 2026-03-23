@@ -24,11 +24,18 @@ import {
   updateCourseCutoff,
 } from "./services/api";
 
+function createClientId() {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return `id-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function makeInitialUACERows() {
   return [
-    { id: crypto.randomUUID(), subject: "", grade: "" },
-    { id: crypto.randomUUID(), subject: "", grade: "" },
-    { id: crypto.randomUUID(), subject: "", grade: "" },
+    { id: createClientId(), subject: "", grade: "" },
+    { id: createClientId(), subject: "", grade: "" },
+    { id: createClientId(), subject: "", grade: "" },
   ];
 }
 
@@ -63,6 +70,20 @@ export default function App() {
   const [adminError, setAdminError] = useState("");
   const [uaceSubjects, setUaceSubjects] = useState([]);
   const [subjectsLoading, setSubjectsLoading] = useState(true);
+
+  const completedUaceCount = useMemo(
+    () => uaceRows.filter((row) => row.subject.trim() && row.grade).length,
+    [uaceRows]
+  );
+  const completedUceCount = useMemo(() => uceGrades.filter(Boolean).length, [uceGrades]);
+  const candidateDisplayName = useMemo(() => {
+    if (!candidate) {
+      return "";
+    }
+
+    const fullName = [candidate.first_name, candidate.last_name].filter(Boolean).join(" ").trim();
+    return fullName || candidate.email || "Candidate";
+  }, [candidate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,7 +125,7 @@ export default function App() {
   }, [uaceRows, uceGrades]);
 
   const addUaceRow = () => {
-    setUaceRows((previous) => [...previous, { id: crypto.randomUUID(), subject: "", grade: "" }]);
+    setUaceRows((previous) => [...previous, { id: createClientId(), subject: "", grade: "" }]);
   };
 
   const removeUaceRow = (indexToRemove) => {
@@ -405,6 +426,22 @@ export default function App() {
           <p className="kicker">Uganda Public University Admissions</p>
           <h1>UniPath Qualification System</h1>
           <p>Create your account or sign in to continue with a personalized admissions estimate.</p>
+          <div className="hero-banner auth-hero-banner">
+            <div className="hero-banner-copy">
+              <strong>Fast, guided admissions estimation</strong>
+              <p>Move from profile setup to course matching in a clean, step-by-step flow.</p>
+            </div>
+            <div className="hero-mini-grid">
+              <div className="hero-mini-card">
+                <span>Guided</span>
+                <strong>4-step flow</strong>
+              </div>
+              <div className="hero-mini-card">
+                <span>Instant</span>
+                <strong>Live eligibility</strong>
+              </div>
+            </div>
+          </div>
         </section>
 
         <div className="layout auth-layout">
@@ -433,6 +470,34 @@ export default function App() {
           Enter your UACE and UCE results, apply PUJAB weighting rules, and instantly see
           eligible courses in public universities.
         </p>
+        <div className="hero-banner">
+          <div className="hero-banner-copy">
+            <span className="hero-eyebrow">Candidate Workspace</span>
+            <strong>{candidateDisplayName}</strong>
+            <p>
+              Track your progress as you build a stronger course shortlist and compare outcomes in
+              real time.
+            </p>
+          </div>
+          <div className="hero-mini-grid">
+            <div className="hero-mini-card">
+              <span>UACE Entries</span>
+              <strong>{completedUaceCount}/3+</strong>
+            </div>
+            <div className="hero-mini-card">
+              <span>UCE Grades</span>
+              <strong>{completedUceCount}/8</strong>
+            </div>
+            <div className="hero-mini-card">
+              <span>Workflow</span>
+              <strong>Step {result ? 4 : step}</strong>
+            </div>
+            <div className="hero-mini-card">
+              <span>Status</span>
+              <strong>{result ? "Calculated" : loading ? "Processing" : "Draft"}</strong>
+            </div>
+          </div>
+        </div>
       </section>
 
       <StepHeader currentStep={result ? 4 : step} />

@@ -12,51 +12,42 @@ export default function StrengthProfilePanel({ result }) {
   const strengthBadgeColor = (level) => {
     switch (level) {
       case "excellent":
-        return "#059669"; // green
+        return "excellent";
       case "strong":
-        return "#0891b2"; // cyan
+        return "strong";
       case "good":
-        return "#7c3aed"; // violet
+        return "good";
       default:
-        return "#6b7280"; // gray
+        return "neutral";
     }
   };
 
   return (
-    <div style={{ marginTop: "24px", padding: "16px", backgroundColor: "#f0fdf4", borderRadius: "8px", border: "1px solid #dcfce7" }}>
-      <h3 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "12px", marginTop: 0 }}>
-        📊 Your Subject Strengths
-      </h3>
+    <section className="feature-panel tone-green">
+      <div className="section-heading">
+        <h3>Your Subject Strengths</h3>
+        <p>These are the strongest parts of your academic profile right now.</p>
+      </div>
 
-      <div style={{ marginBottom: "16px" }}>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+      <div className="strength-badges">
           {strong_subjects.map((subject, idx) => (
             <div
               key={idx}
-              style={{
-                padding: "8px 12px",
-                backgroundColor: strengthBadgeColor(subject.strength_level),
-                color: "white",
-                borderRadius: "20px",
-                fontSize: "13px",
-                fontWeight: 500,
-              }}
+              className={`strength-badge tone-${strengthBadgeColor(subject.strength_level)}`}
             >
               {subject.subject_name} ({subject.grade}) - {subject.strength_level}
             </div>
           ))}
-        </div>
       </div>
 
-      <p style={{ fontSize: "14px", lineHeight: 1.6, color: "#374151", marginBottom: "12px", marginTop: 0 }}>
-        {insights}
-      </p>
+      <p className="feature-copy">{insights}</p>
 
       {recommended_course_ids && recommended_course_ids.length > 0 && (
-        <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "8px" }}>
-          💡 Tip: {recommended_course_ids.length} course(s) value your strong subjects
+        <p className="feature-tip">
+          Tip: {recommended_course_ids.length} course(s) especially value the subjects where you
+          are performing best.
         </p>
       )}
-    </div>
+    </section>
   );
 }

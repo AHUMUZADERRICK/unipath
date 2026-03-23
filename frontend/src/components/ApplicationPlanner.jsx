@@ -13,13 +13,13 @@ export default function ApplicationPlannerPanel({ candidateId, eligibleCourses, 
     setLoading(true);
     try {
       const newRank = (planned.length || 0) + 1;
-      const result = await api.savePlannerCourse(candidateId, selectedCourse.id, newRank, notes);
+      const result = await api.savePlannerCourse(candidateId, selectedCourse.course_id, newRank, notes);
 
       setPlanned([
         ...planned,
         {
           id: result.id,
-          course_id: selectedCourse.id,
+          course_id: selectedCourse.course_id,
           course_name: selectedCourse.course,
           university: selectedCourse.university,
           rank: newRank,
@@ -78,30 +78,25 @@ export default function ApplicationPlannerPanel({ candidateId, eligibleCourses, 
   ) || [];
 
   return (
-    <div style={{ marginTop: "24px", padding: "16px", backgroundColor: "#eff6ff", borderRadius: "8px", border: "1px solid #bfdbfe" }}>
-      <h3 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "12px", marginTop: 0 }}>
-        📋 Application Planner
-      </h3>
+    <section className="feature-panel tone-blue">
+      <div className="section-heading">
+        <h3>Application Planner</h3>
+        <p>Build a ranked shortlist from the courses you already qualify for.</p>
+      </div>
 
-      <div style={{ marginBottom: "16px", padding: "12px", backgroundColor: "white", borderRadius: "6px", border: "1px solid #dbeafe" }}>
-        <p style={{ fontSize: "13px", color: "#374151", marginTop: 0, marginBottom: "12px" }}>
+      <div className="planner-form">
+        <p className="feature-copy">
           Add courses in order of preference. You can rerank them anytime.
         </p>
 
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "12px" }}>
+        <div className="planner-controls">
           <select
-            value={selectedCourse?.id || ""}
+            value={selectedCourse?.course_id || ""}
             onChange={(e) => {
               const course = availableCourses.find((c) => c.course_id === parseInt(e.target.value));
               setSelectedCourse(course);
             }}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "6px",
-              border: "1px solid #d1d5db",
-              fontSize: "13px",
-              minWidth: "200px",
-            }}
+            className="planner-select"
             disabled={availableCourses.length === 0 || loading}
           >
             <option value="">Select a course to add...</option>
@@ -113,117 +108,72 @@ export default function ApplicationPlannerPanel({ candidateId, eligibleCourses, 
           </select>
 
           <button
+            type="button"
             onClick={addCourseToPlan}
             disabled={!selectedCourse || loading}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: selectedCourse && !loading ? "#3b82f6" : "#d1d5db",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              fontSize: "13px",
-              fontWeight: 500,
-              cursor: selectedCourse && !loading ? "pointer" : "not-allowed",
-            }}
+            className="btn-primary planner-add"
           >
             {loading ? "Adding..." : "Add"}
           </button>
         </div>
 
         {selectedCourse && (
-          <div style={{ marginBottom: "12px" }}>
+          <div>
             <textarea
               placeholder="Optional notes (e.g., good location, scholarship available)"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              style={{
-                width: "100%",
-                minHeight: "60px",
-                padding: "8px",
-                borderRadius: "6px",
-                border: "1px solid #d1d5db",
-                fontSize: "13px",
-                fontFamily: "inherit",
-              }}
+              className="planner-notes"
             />
           </div>
         )}
       </div>
 
       {planned.length === 0 ? (
-        <p style={{ fontSize: "13px", color: "#9ca3af", marginTop: 0, marginBottom: 0 }}>
+        <p className="feature-tip">
           No courses added yet. Select eligible courses above to start planning your application.
         </p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <div className="planner-list">
           {planned.map((course, idx) => (
             <div
               key={course.id}
-              style={{
-                padding: "12px",
-                backgroundColor: "white",
-                borderRadius: "6px",
-                border: "1px solid #dbeafe",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
+              className="planner-item"
             >
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: "13px", fontWeight: 500, color: "#111827" }}>
+              <div className="planner-item-copy">
+                <div className="planner-item-title">
                   #{course.rank}. {course.course_name}
                 </div>
-                <div style={{ fontSize: "12px", color: "#6b7280" }}>
+                <div className="planner-item-meta">
                   {course.university}
                   {course.notes && ` • ${course.notes}`}
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: "4px" }}>
+              <div className="planner-actions">
                 <button
+                  type="button"
                   onClick={() => moveUp(idx)}
                   disabled={idx === 0 || loading}
-                  style={{
-                    padding: "4px 8px",
-                    backgroundColor: idx === 0 || loading ? "#e5e7eb" : "#f3f4f6",
-                    color: idx === 0 || loading ? "#9ca3af" : "#374151",
-                    border: "1px solid #d1d5db",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    cursor: idx === 0 || loading ? "not-allowed" : "pointer",
-                  }}
+                  className="planner-icon-btn"
                 >
                   ↑
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => moveDown(idx)}
                   disabled={idx === planned.length - 1 || loading}
-                  style={{
-                    padding: "4px 8px",
-                    backgroundColor: idx === planned.length - 1 || loading ? "#e5e7eb" : "#f3f4f6",
-                    color: idx === planned.length - 1 || loading ? "#9ca3af" : "#374151",
-                    border: "1px solid #d1d5db",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    cursor: idx === planned.length - 1 || loading ? "not-allowed" : "pointer",
-                  }}
+                  className="planner-icon-btn"
                 >
                   ↓
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => removeCourseFromPlan(course.id)}
                   disabled={loading}
-                  style={{
-                    padding: "4px 8px",
-                    backgroundColor: loading ? "#e5e7eb" : "#fee2e2",
-                    color: loading ? "#9ca3af" : "#dc2626",
-                    border: "1px solid #fca5a5",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    cursor: loading ? "not-allowed" : "pointer",
-                  }}
+                  className="planner-icon-btn danger"
                 >
                   ✕
                 </button>
@@ -234,10 +184,10 @@ export default function ApplicationPlannerPanel({ candidateId, eligibleCourses, 
       )}
 
       {planned.length > 0 && (
-        <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "12px", marginBottom: 0 }}>
-          ℹ️ Prioritize your top 3 choices. Use the arrows to reorder anytime.
+        <p className="feature-tip">
+          Prioritize your top 3 choices first, then use the arrows to refine the rest of the order.
         </p>
       )}
-    </div>
+    </section>
   );
 }
