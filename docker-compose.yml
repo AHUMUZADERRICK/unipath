@@ -23,8 +23,9 @@ services:
     build: ./backend
     container_name: unipath-backend
     restart: unless-stopped
-    command: sh -c "python manage.py migrate && python manage.py ensure_default_admin && python manage.py ensure_firebase_admin && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py ensure_default_admin && python manage.py ensure_firebase_admin && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers $$GUNICORN_WORKERS --timeout $$GUNICORN_TIMEOUT"
     environment:
+      PYTHONUNBUFFERED: ${PYTHONUNBUFFERED:-1}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
@@ -33,7 +34,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_HOST: ${POSTGRES_HOST:-db}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      CORS_ALLOW_ALL_ORIGINS: ${CORS_ALLOW_ALL_ORIGINS:-1}
+      CORS_ALLOW_ALL_ORIGINS: ${CORS_ALLOW_ALL_ORIGINS:-0}
       DEFAULT_ADMIN_USERNAME: ${DEFAULT_ADMIN_USERNAME:-AZD}
       DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-azd123456}
       DEFAULT_ADMIN_EMAIL: ${DEFAULT_ADMIN_EMAIL:-azd@unipath.local}
@@ -42,6 +43,8 @@ services:
       FIREBASE_CREDENTIALS_FILE: ${FIREBASE_CREDENTIALS_FILE:-}
       FIREBASE_CREDENTIALS_JSON: ${FIREBASE_CREDENTIALS_JSON:-}
       FIREBASE_ADMIN_EMAIL: ${FIREBASE_ADMIN_EMAIL:-azd@unipath.local}
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-3}
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-120}
     ports:
       - "${BACKEND_PORT:-8001}:8000"
     depends_on:

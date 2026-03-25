@@ -25,13 +25,9 @@ apt update && apt upgrade -y
 # Install Docker
 curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
 
-# Install Docker Compose
-curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-
 # Verify
 docker --version
-docker-compose --version
+docker compose version
 ```
 
 ### 3️⃣ **Clone Your Repository**
@@ -55,30 +51,32 @@ nano .env
 POSTGRES_PASSWORD=YourStrongPassword123!
 DJANGO_SECRET_KEY=GeneryARandomStringHere123456789
 DJANGO_ALLOWED_HOSTS=YOUR_VPS_IP,yourdomain.com
-VITE_API_BASE_URL=http://YOUR_VPS_IP:8000/api
+VITE_API_BASE_URL=http://YOUR_VPS_IP:8001/api
+BACKEND_PORT=8001
+FRONTEND_PORT=3001
 ```
 
 **Save:** Press `Ctrl+X`, then `Y`, then `Enter`
 
 ### 5️⃣ **Start the Application** (3 mins)
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
 ### 6️⃣ **Run Database Setup**
 ```bash
 # Run migrations
-docker-compose exec backend python manage.py migrate
+docker compose exec backend python manage.py migrate
 
 # Create admin user (optional but recommended)
-docker-compose exec backend python manage.py createsuperuser
+docker compose exec backend python manage.py createsuperuser
 # Follow the prompts to set username, email, password
 ```
 
 ### ✅ **Done!** Access your app:
-- **Frontend:** `http://YOUR_VPS_IP:3000`
-- **Backend API:** `http://YOUR_VPS_IP:8000`
-- **Admin Panel:** `http://YOUR_VPS_IP:8000/admin`
+- **Frontend:** `http://YOUR_VPS_IP:3001`
+- **Backend API:** `http://YOUR_VPS_IP:8001`
+- **Admin Panel:** `http://YOUR_VPS_IP:8001/admin`
 
 ---
 
@@ -124,33 +122,33 @@ git push origin main
 
 ### View logs
 ```bash
-docker-compose logs -f backend      # Backend logs
-docker-compose logs -f frontend     # Frontend logs
-docker-compose logs -f              # All logs
+docker compose logs -f backend      # Backend logs
+docker compose logs -f frontend     # Frontend logs
+docker compose logs -f              # All logs
 ```
 
 ### Stop/Start services
 ```bash
-docker-compose stop
-docker-compose start
-docker-compose restart
+docker compose stop
+docker compose start
+docker compose restart
 ```
 
 ### Reset everything (⚠️ deletes data)
 ```bash
-docker-compose down -v
-docker-compose up -d
-docker-compose exec backend python manage.py migrate
+docker compose down -v
+docker compose up -d
+docker compose exec backend python manage.py migrate
 ```
 
 ### Backup database
 ```bash
-docker-compose exec db pg_dump -U postgres unipath > backup_$(date +%Y%m%d_%H%M%S).sql
+docker compose exec db pg_dump -U postgres unipath > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 ### Check service status
 ```bash
-docker-compose ps
+docker compose ps
 docker ps -a
 ```
 
@@ -161,19 +159,19 @@ docker ps -a
 ### Services won't start
 ```bash
 # Check logs for errors
-docker-compose logs
+docker compose logs
 
 # Rebuild containers
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
+docker compose down
+docker compose build --no-cache
+docker compose up -d
 ```
 
 ### Port already in use
 ```bash
 # Find what's using the port
-lsof -i :3000
-lsof -i :8000
+lsof -i :3001
+lsof -i :8001
 
 # Kill the process
 kill -9 PID
@@ -182,18 +180,18 @@ kill -9 PID
 ### Database connection error
 ```bash
 # Restart database
-docker-compose restart db
+docker compose restart db
 
 # Check database logs
-docker-compose logs db
+docker compose logs db
 ```
 
 ### "Permission denied" errors
 ```bash
 # Ensure correct permissions
-docker-compose down
+docker compose down
 chmod -R 755 .
-docker-compose up -d
+docker compose up -d
 ```
 
 ---
@@ -202,7 +200,7 @@ docker-compose up -d
 
 - **Full Deployment Guide:** See [DEPLOYMENT.md](./DEPLOYMENT.md)
 - **Manual Updates:** Edit `.env` and run `docker-compose up -d` again
-- **Logs:** Always check `docker-compose logs` when something goes wrong
+- **Logs:** Always check `docker compose logs` when something goes wrong
 
 ---
 

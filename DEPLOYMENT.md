@@ -21,16 +21,12 @@ apt update && apt upgrade -y
 curl -fsSL https://get.docker.com -o get-docker.sh
 sh get-docker.sh
 
-# Install Docker Compose
-curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-
 # Install Git
 apt install -y git
 
 # Verify installations
 docker --version
-docker-compose --version
+docker compose version
 git --version
 ```
 
@@ -63,15 +59,13 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 
 ### Build and start services:
 ```bash
-docker-compose up -d
-docker-compose exec backend python manage.py migrate
-docker-compose exec backend python manage.py createsuperuser
+docker compose up -d --build
 ```
 
 The application should now be running:
-- **Backend API:** `http://YOUR_VPS_IP:8000/`
-- **Frontend:** `http://YOUR_VPS_IP:3000/`
-- **Admin:** `http://YOUR_VPS_IP:8000/admin/`
+- **Backend API:** `http://YOUR_VPS_IP:8001/`
+- **Frontend:** `http://YOUR_VPS_IP:3001/`
+- **Admin:** `http://YOUR_VPS_IP:8001/admin/`
 
 ---
 
@@ -114,8 +108,8 @@ Check GitHub Actions tab to see deployment logs.
 The [docker-compose.yml](./docker-compose.yml) file is already configured with backend and frontend services. Key features:
 
 - **PostgreSQL Database** - persistent data storage
-- **Django Backend** - API server on port 8000
-- **React Frontend** - web interface on port 3000
+- **Django Backend** - API server exposed on host port 8001 by default
+- **React Frontend** - web interface exposed on host port 3001 by default
 - **Auto-migrations** - database schema is automatically applied on startup
 - **Health checks** - ensures database is ready before backend starts
 - **Environment variables** - configurable via `.env` file
@@ -130,18 +124,27 @@ Create [.env.example](../.env.example):
 # Database Configuration
 POSTGRES_DB=unipath
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your_secure_password_here
+POSTGRES_PASSWORD=postgres
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
 
+# App Host Ports
+BACKEND_PORT=8001
+FRONTEND_PORT=3001
+
 # Django Settings
-DJANGO_DEBUG=False
+DJANGO_DEBUG=0
 DJANGO_SECRET_KEY=your-secret-key-here-generate-something-long-and-random
 DJANGO_ALLOWED_HOSTS=YOUR_VPS_IP,yourdomain.com
 CORS_ALLOW_ALL_ORIGINS=0
 
+# Default Admin Bootstrap
+DEFAULT_ADMIN_USERNAME=AZD
+DEFAULT_ADMIN_PASSWORD=azd123456
+DEFAULT_ADMIN_EMAIL=azd@unipath.local
+
 # Frontend API URL (used during build)
-VITE_API_BASE_URL=http://YOUR_VPS_IP:8000/api
+VITE_API_BASE_URL=http://YOUR_VPS_IP:8001/api
 ```
 
 Password sync note:
@@ -157,11 +160,10 @@ If you want to deploy manually:
 ```bash
 cd /home/root/unipath
 git pull origin main
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-docker-compose exec backend python manage.py migrate
-docker-compose logs -f backend
+docker compose down
+docker compose build --no-cache
+docker compose up -d
+docker compose logs -f backend
 ```
 
 ---
@@ -170,21 +172,21 @@ docker-compose logs -f backend
 
 ### Check service status:
 ```bash
-docker-compose ps
-docker-compose logs backend
-docker-compose logs frontend
+docker compose ps
+docker compose logs backend
+docker compose logs frontend
 ```
 
 ### Reset everything:
 ```bash
-docker-compose down -v
+docker compose down -v
 docker system prune -a
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Check port usage:
 ```bash
-netstat -tuln | grep -E ':(3000|8000|5432)'
+netstat -tuln | grep -E ':(3001|8001|5432)'
 ```
 
 ---
@@ -203,12 +205,12 @@ netstat -tuln | grep -E ':(3000|8000|5432)'
 
 3. **Monitor logs**:
    ```bash
-   docker-compose logs -f
+   docker compose logs -f
    ```
 
 4. **Backup database**:
    ```bash
-   docker-compose exec db pg_dump -U postgres unipath > backup_$(date +%Y%m%d).sql
+   docker compose exec db pg_dump -U postgres unipath > backup_$(date +%Y%m%d).sql
    ```
 
 ---
@@ -216,5 +218,5 @@ netstat -tuln | grep -E ':(3000|8000|5432)'
 ## Support
 For issues, check Docker logs first:
 ```bash
-docker-compose logs -f --tail=50
+docker compose logs -f --tail=50
 ```
