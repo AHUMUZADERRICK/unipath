@@ -144,6 +144,10 @@ CORS_ALLOW_ALL_ORIGINS=0
 VITE_API_BASE_URL=http://YOUR_VPS_IP:8000/api
 ```
 
+Password sync note:
+- `POSTGRES_PASSWORD` must be the same value for both the `db` and `backend` services.
+- If Postgres data already exists and you change `POSTGRES_PASSWORD`, also run `ALTER USER postgres WITH PASSWORD 'new_password';` inside the DB container or recreate the DB volume.
+
 ---
 
 ## Manual Deployment (Without GitHub Actions)
