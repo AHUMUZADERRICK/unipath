@@ -53,7 +53,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-if os.getenv("USE_SQLITE", "0") == "1":
+if os.getenv("USE_FIREBASE", "0") == "1" or os.getenv("USE_SQLITE", "0") == "1":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
